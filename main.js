@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Butonlar
     const convertRobuxButton = document.getElementById('convert-robux-button');
     const withdrawButtonModal = document.getElementById('withdraw-button-modal');
-    const withdrawButtonConvert = document.getElementById('withdraw-button-convert');
     
     // Sayfalar
     const pages = {
@@ -362,8 +361,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameState.eggs >= cost) {
             gameState.eggs -= cost;
             gameState.dragons[gameState.equippedDragon].level++;
-            // Çevirme maliyetini %10 artır
-            gameState.conversionCost *= 1.10;
+            // Her yükseltmede çevirme maliyetini %5 artır
+            gameState.conversionCost *= 1.05;
             audioManager.playSound('purchase');
             showConfetti();
             updateUI(); // Bu UI güncellemesi conversion cost'u da güncelleyecek
@@ -385,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (robuxGained > 0) {
             gameState.eggs -= eggsSpent;
             gameState.robux += robuxGained;
-
+            // Çevirme maliyeti artık satın alma ve yükseltme ile artıyor.
             alert(`${formatNumber(robuxGained)} Robux kazandın!`);
             audioManager.playSound('purchase');
             updateUI(); // UI'ı ve dolayısıyla yeni dönüşüm oranını güncelle
@@ -393,11 +392,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function withdrawRobux(amountInputOverride, urlInputOverride) {
-        // Use override inputs if provided (for convert page), otherwise use modal inputs
-        const amountInput = amountInputOverride || document.getElementById('withdraw-amount-modal');
-        const urlInput = urlInputOverride || document.getElementById('gamepass-url-modal');
-        const withdrawButton = amountInputOverride ? withdrawButtonConvert : withdrawButtonModal;
+    async function withdrawRobux() {
+        const amountInput = document.getElementById('withdraw-amount-modal');
+        const urlInput = document.getElementById('gamepass-url-modal');
+        const withdrawButton = withdrawButtonModal;
 
         const amount = parseInt(amountInput.value, 10);
         const url = urlInput.value.trim();
@@ -474,10 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pages[pageId].classList.remove('hidden');
         }
 
-        document.querySelectorAll('footer .nav-button').forEach(btn => {
+        document.querySelectorAll('#main-nav .nav-button').forEach(btn => {
              btn.classList.remove('active');
         });
-        const activeButton = document.querySelector(`footer .nav-button[data-page="${pageId}"]`);
+        const activeButton = document.querySelector(`#main-nav .nav-button[data-page="${pageId}"]`);
         if (activeButton) {
             activeButton.classList.add('active');
         }
@@ -500,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- OLAY DİNLEYİCİLER ---
     function setupEventListeners() {
         // Navigasyon
-        document.querySelector('footer nav').addEventListener('click', (e) => {
+        document.getElementById('main-nav').addEventListener('click', (e) => {
             const navButton = e.target.closest('.nav-button');
             if (navButton) {
                 const pageId = navButton.dataset.page;
@@ -552,22 +550,8 @@ document.addEventListener('DOMContentLoaded', () => {
             withdrawRobux();
             audioManager.playSound('click');
         });
-
-        withdrawButtonConvert.addEventListener('click', () => {
-            // Re-use the same logic, but ensure we grab the right inputs
-            const amountInput = document.getElementById('withdraw-amount-convert');
-            const urlInput = document.getElementById('gamepass-url-convert');
-            withdrawRobux(amountInput, urlInput); // Pass inputs to the function
-            audioManager.playSound('click');
-        });
         
         // Gamepass Bilgi Linkleri
-        document.getElementById('gamepass-info-link-convert').addEventListener('click', (e) => {
-            e.preventDefault();
-            gamepassInfoModal.classList.remove('hidden');
-            audioManager.playSound('click');
-        });
-
         document.getElementById('gamepass-info-link').addEventListener('click', (e) => {
             e.preventDefault();
             gamepassInfoModal.classList.remove('hidden');

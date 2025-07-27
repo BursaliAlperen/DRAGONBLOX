@@ -154,7 +154,7 @@ main {
     justify-content: flex-start; /* was center */
     align-items: center;
     position: relative;
-    padding: 1rem 0 0 0; /* Adjusted padding */
+    padding: 0; /* Adjusted padding */
     overflow: hidden; /* Prevent main from scrolling */
 }
 
@@ -168,6 +168,14 @@ main {
     padding-left: 1rem;
     padding-right: 1rem;
     padding-bottom: 1rem;
+}
+
+#convert-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
 
 #dragon-area {
@@ -216,6 +224,11 @@ main {
     font-family: var(--font-title);
     color: var(--primary-color);
     margin-bottom: 0.5rem;
+}
+
+#ad-rewards-section p {
+    font-weight: bold;
+    margin-bottom: 1rem;
 }
 
 #upgrade-cost, #upgrade-level {
@@ -322,6 +335,7 @@ footer {
     backdrop-filter: blur(5px);
     border-radius: var(--border-radius);
     margin-top: auto; /* Footer'ı aşağıya iter */
+    margin-bottom: 1rem; /* Kullanıcının isteği üzerine yukarı taşımak için */
     display: flex;
     flex-direction: column;
 }
@@ -352,15 +366,24 @@ nav {
     margin: 0 0.25rem;
     padding: 0.8rem 0.5rem; /* Padding adjustment for smaller screens */
     display: flex;
+    flex-direction: column; /* Default to column for icon + text */
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.3rem; /* Adjusted gap */
+    font-size: 0.7rem; /* Smaller font size for mobile */
+    min-width: 55px; /* Ensure buttons have a minimum width */
+    line-height: 1.1; /* Adjust line height */
+    word-break: break-word; /* Allow text to wrap */
 }
 
 .nav-button img {
-    display: none; /* Hide icons by default on desktop */
+    display: block; /* Show icons by default (mobile first) */
     width: 24px;
     height: 24px;
+}
+
+.nav-button span {
+    display: block; /* Show text by default */
 }
 
 .action-button:active, .nav-button:active {
@@ -445,8 +468,8 @@ nav {
     padding: 1rem;
     text-align: center;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    flex-direction: column; /* İçeriği dikey olarak hizala */
+    justify-content: space-between; /* İçeriği dikeyde yay */
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
 }
@@ -464,31 +487,31 @@ nav {
     width: 80px;
     height: 80px;
     object-fit: contain;
-    margin: 0 auto;
+    margin: 0 auto 0.5rem; /* Add bottom margin */
+    flex-shrink: 0; /* Resmin küçülmesini engelle */
 }
 
 .item-card .dragon-name {
     font-family: var(--font-title);
     font-size: 0.9rem;
-    margin-top: 0.5rem;
     color: var(--primary-color);
-    height: 30px; /* Sabit yükseklik */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    line-height: 1.1; /* Adjust line height */
+    word-break: break-word; /* Yazıların taşmasını engelle */
+    margin-bottom: 0.5rem; /* Alt boşluk ekle */
 }
 
 .item-card .item-info {
     font-size: 0.7rem;
-    margin-top: 0.5rem;
+    margin-top: auto; /* Fiyatı ve butonu aşağıya iter */
     font-weight: 700;
+    margin-bottom: 0.25rem;
 }
 .item-card .item-price {
     font-size: 0.7rem;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
     font-weight: 700;
     color: var(--secondary-color);
-    word-wrap: break-word;
+    word-break: break-word;
 }
 .item-card .item-button {
     font-family: var(--font-title);
@@ -497,9 +520,11 @@ nav {
     border: none;
     color: var(--text-color);
     padding: 0.5rem;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem; /* Increased margin */
     border-radius: 10px;
     cursor: pointer;
+    width: 100%; /* Make button full width */
+    flex-shrink: 0; /* Butonun küçülmesini engelle */
 }
 .item-card .item-button:disabled {
     background: #555;
@@ -514,15 +539,20 @@ nav {
 /* --- Mobile Responsiveness --- */
 
 /* Medium screens (tablets) */
-@media (max-width: 768px) {
-    /* More flexible nav for tablets */
-    nav {
-        flex-wrap: wrap;
-    }
+@media (min-width: 601px) {
     .nav-button {
-        font-size: 0.8rem;
-        padding: 0.7rem 0.4rem;
-        flex-basis: 30%; /* allow 3 buttons per row */
+        flex-direction: row; /* Icon and text side-by-side */
+        font-size: 1rem;
+        min-width: auto;
+        padding: 0.8rem 1rem;
+    }
+
+    .nav-button img {
+        display: none; /* Hide icons on larger screens */
+    }
+
+    .nav-button span {
+        display: block; /* Make sure text is visible */
     }
 }
 
@@ -579,12 +609,13 @@ nav {
         padding: 0.4rem 0.2rem;
         margin: 0;
         min-width: 50px; /* Give buttons a minimum width */
+        gap: 0.2rem; /* Reduce gap for smallest screens */
     }
     .nav-button img {
         display: block; /* Show icons */
     }
     .nav-button span {
-        display: none; /* Hide text */
+        display: block; /* Show text */
     }
 
 
@@ -612,21 +643,11 @@ nav {
     .item-card img {
         width: 60px;
         height: 60px;
+        margin-bottom: 0.25rem;
     }
     .item-card .dragon-name {
         font-size: 0.8rem;
-        height: 25px;
-    }
-}
-
-/* Very small screens */
-@media (max-width: 360px) {
-    #shop-grid, #inventory-grid {
-        grid-template-columns: repeat(2, 1fr); /* Force 2 columns */
-    }
-    .item-card .dragon-name {
-        height: 22px;
-        font-size: 0.7rem;
+        min-height: auto; /* Remove min-height */
     }
     .item-card .item-info, .item-card .item-price {
          font-size: 0.65rem;
@@ -634,5 +655,6 @@ nav {
     .item-card .item-button {
         font-size: 0.7rem;
         padding: 0.4rem;
+        margin-top: 0.5rem;
     }
 }
