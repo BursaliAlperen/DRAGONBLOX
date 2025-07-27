@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Butonlar
     const convertRobuxButton = document.getElementById('convert-robux-button');
     const withdrawButtonModal = document.getElementById('withdraw-button-modal');
+    const withdrawButtonConvert = document.getElementById('withdraw-button-convert');
     
     // Sayfalar
     const pages = {
@@ -107,13 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function init() {
         loadGame();
+        setupEventListeners();
         
         // Yükleme ekranını gizle ve oyunu başlat
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-            gameContainer.classList.remove('hidden');
-            document.dispatchEvent(new Event('play-music-event'));
-        }, 1000); 
+        loadingScreen.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+        document.dispatchEvent(new Event('play-music-event'));
 
         setInterval(gameLoop, 1000);
     }
@@ -393,10 +393,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function withdrawRobux() {
-        const amountInput = document.getElementById('withdraw-amount-modal');
-        const urlInput = document.getElementById('gamepass-url-modal');
-        const withdrawButton = document.getElementById('withdraw-button-modal');
+    async function withdrawRobux(amountInputOverride, urlInputOverride) {
+        // Use override inputs if provided (for convert page), otherwise use modal inputs
+        const amountInput = amountInputOverride || document.getElementById('withdraw-amount-modal');
+        const urlInput = urlInputOverride || document.getElementById('gamepass-url-modal');
+        const withdrawButton = amountInputOverride ? withdrawButtonConvert : withdrawButtonModal;
+
         const amount = parseInt(amountInput.value, 10);
         const url = urlInput.value.trim();
 
@@ -479,6 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeButton) {
             activeButton.classList.add('active');
         }
+        
+        // Scroll to top on page switch for scrollable pages
+        if (pages[pageId] && pages[pageId].classList.contains('scrollable-page')) {
+            pages[pageId].scrollTop = 0;
+        }
     }
     
     // --- MÜZİK KONTROLÜ ---
@@ -491,76 +498,92 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // --- OLAY DİNLEYİCİLER ---
-    
-    // Navigasyon
-    document.querySelector('footer nav').addEventListener('click', (e) => {
-        if (e.target.matches('.nav-button')) {
-            const pageId = e.target.dataset.page;
-            if (pageId) {
-                switchPage(pageId);
-                audioManager.playSound('click');
+    function setupEventListeners() {
+        // Navigasyon
+        document.querySelector('footer nav').addEventListener('click', (e) => {
+            const navButton = e.target.closest('.nav-button');
+            if (navButton) {
+                const pageId = navButton.dataset.page;
+                if (pageId) {
+                    switchPage(pageId);
+                    audioManager.playSound('click');
+                }
             }
-        }
-    });
+        });
 
-    // Dükkan Etkileşimleri
-    shopGrid.addEventListener('click', (e) => {
-        const button = e.target.closest('.item-button');
-        if (!button) return;
+        // Dükkan Etkileşimleri
+        shopGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.item-button');
+            if (!button) return;
 
-        audioManager.playSound('click');
-        if (button.classList.contains('buy-button')) {
-            buyDragon(button.dataset.id);
-        }
-    });
-    
-    // Envanter Etkileşimleri
-    inventoryGrid.addEventListener('click', (e) => {
-        const button = e.target.closest('.equip-button');
-        if (button) {
-            equipDragon(button.dataset.id);
-        }
-    });
+            audioManager.playSound('click');
+            if (button.classList.contains('buy-button')) {
+                buyDragon(button.dataset.id);
+            }
+        });
+        
+        // Envanter Etkileşimleri
+        inventoryGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.equip-button');
+            if (button) {
+                equipDragon(button.dataset.id);
+            }
+        });
 
-    // Çevirme ve Çekme
-    convertRobuxButton.onclick = () => { convertToRobux(); audioManager.playSound('click'); };
-    
-    robuxCounter.onclick = () => {
-        // switchPage('convert-page'); // Eski davranış
-        withdrawModal.classList.remove('hidden'); // Yeni davranış: modalı aç
-        audioManager.playSound('click');
-    };
+        // Çevirme ve Çekme
+        convertRobuxButton.addEventListener('click', () => {
+            convertToRobux();
+            audioManager.playSound('click');
+        });
+        
+        robuxCounter.addEventListener('click', () => {
+            withdrawModal.classList.remove('hidden');
+            audioManager.playSound('click');
+        });
 
-    withdrawModal.querySelector('.close-button').onclick = () => {
-        withdrawModal.classList.add('hidden');
-        audioManager.playSound('click');
-    };
-    
-    withdrawButtonModal.onclick = () => { withdrawRobux(); audioManager.playSound('click'); };
+        // Modal Kapatma
+        withdrawModal.querySelector('.close-button').addEventListener('click', () => {
+            withdrawModal.classList.add('hidden');
+            audioManager.playSound('click');
+        });
+        
+        // Çekim Butonları
+        withdrawButtonModal.addEventListener('click', () => {
+            withdrawRobux();
+            audioManager.playSound('click');
+        });
 
-    document.getElementById('withdraw-button-convert').onclick = () => { withdrawRobux(); audioManager.playSound('click'); };
-    
-    document.getElementById('gamepass-info-link-convert').onclick = (e) => {
-        e.preventDefault();
-        gamepassInfoModal.classList.remove('hidden');
-        audioManager.playSound('click');
-    };
+        withdrawButtonConvert.addEventListener('click', () => {
+            // Re-use the same logic, but ensure we grab the right inputs
+            const amountInput = document.getElementById('withdraw-amount-convert');
+            const urlInput = document.getElementById('gamepass-url-convert');
+            withdrawRobux(amountInput, urlInput); // Pass inputs to the function
+            audioManager.playSound('click');
+        });
+        
+        // Gamepass Bilgi Linkleri
+        document.getElementById('gamepass-info-link-convert').addEventListener('click', (e) => {
+            e.preventDefault();
+            gamepassInfoModal.classList.remove('hidden');
+            audioManager.playSound('click');
+        });
 
-    document.getElementById('gamepass-info-link').onclick = (e) => {
-        e.preventDefault();
-        gamepassInfoModal.classList.remove('hidden');
-        audioManager.playSound('click');
-    };
-    
-    gamepassInfoModal.querySelector('.close-button').onclick = () => {
-        gamepassInfoModal.classList.add('hidden');
-        audioManager.playSound('click');
-    };
-    
-    // Yükseltme
-    upgradeButton.onclick = () => {
-        upgradeDragon();
-    };
+        document.getElementById('gamepass-info-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            gamepassInfoModal.classList.remove('hidden');
+            audioManager.playSound('click');
+        });
+        
+        gamepassInfoModal.querySelector('.close-button').addEventListener('click', () => {
+            gamepassInfoModal.classList.add('hidden');
+            audioManager.playSound('click');
+        });
+        
+        // Yükseltme
+        upgradeButton.addEventListener('click', () => {
+            upgradeDragon();
+        });
+    }
 
     // Oyunu başlat
     init();
