@@ -1,0 +1,173 @@
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://js.onclckmn.com/static/onclicka.js" data-admpid="353937"></script>
+    <title>DRAGONBLOX</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <script type="importmap">
+    {
+      "imports": {
+        "canvas-confetti": "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.module.mjs"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="loading-screen">
+        <img src="red_dragon.png" alt="Ejderha Yükleniyor" class="loading-dragon">
+        <div class="spinner"></div>
+        <p>Yükleniyor...</p>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <header>
+            <h1 class="game-title">DRAGONBLOX</h1>
+            <div class="currency-display">
+                <div id="egg-counter" class="currency-item">
+                    <img src="egg_icon.png" alt="Yumurta">
+                    <span id="eggs">0</span>
+                </div>
+                <div id="robux-counter" class="currency-item" title="Robux Çek">
+                    <img src="robux_icon.png" alt="Robux">
+                    <span id="robux">0</span>
+                </div>
+            </div>
+             <div class="banner-ad-container top-banner">
+                <div data-banner-id="6084110"></div>
+            </div>
+        </header>
+
+        <main>
+            
+            <!-- Ana Ekran Sayfası -->
+            <div id="main-page" class="page">
+                <div id="dragon-area">
+                    <div id="equipped-dragon-container">
+                        <!-- Takılan ejderha buraya gelecek -->
+                    </div>
+                    <p id="egg-rate">Yumurta/s: 0</p>
+                </div>
+            </div>
+
+            <!-- Dükkan Sayfası -->
+            <div id="shop-page" class="page hidden scrollable-page">
+                <h2>Dükkan</h2>
+                <div id="shop-grid" class="grid-container"></div>
+            </div>
+
+            <!-- Envanter Sayfası -->
+            <div id="inventory-page" class="page hidden scrollable-page">
+                 <h2>Envanter</h2>
+                <div id="inventory-grid" class="grid-container"></div>
+            </div>
+
+             <!-- Yükseltme Sayfası -->
+            <div id="upgrade-page" class="page hidden">
+                <h2>Yükseltmeler</h2>
+                <div id="upgrade-section">
+                     <p>Mevcut Ejderhanı Yükselt</p>
+                     <p id="upgrade-level">Seviye: 1</p>
+                     <p id="upgrade-cost">Yükseltme Bedeli: 100 Yumurta</p>
+                     <button id="upgrade-button" class="action-button">Yükselt</button>
+                </div>
+            </div>
+
+            <!-- Çevirme Sayfası -->
+            <div id="convert-page" class="page hidden">
+                <h2>Çevir</h2>
+                <div class="convert-box">
+                    <h3>Yumurtaları Robux'a Çevir</h3>
+                    <p id="convert-rate-info">1 Robux = 50,000 Yumurta</p>
+                    <p class="small-info">Not: Her çevirme sonrası bedel artacaktır.</p>
+                    <button id="convert-robux-button" class="action-button">Hepsini Çevir</button>
+                </div>
+
+                <div class="convert-box" style="margin-top: 2rem;">
+                     <h3>Robux Çek</h3>
+                     <p class="small-info" style="margin-bottom: 1rem;">Minimum 50 Robux çekilebilir.</p>
+                     
+                     <div class="withdraw-input-group">
+                        <span class="input-icon">R$</span>
+                        <input type="number" id="withdraw-amount-convert" placeholder="Miktar (min 50)">
+                     </div>
+
+                     <div class="withdraw-input-group">
+                         <span class="input-icon">🔗</span>
+                         <input type="text" id="gamepass-url-convert" placeholder="Gamepass Linkiniz">
+                     </div>
+
+                     <button id="withdraw-button-convert" class="action-button">Çekim Talebi Gönder</button>
+                     <a href="#" id="gamepass-info-link-convert" class="how-to-link">Gamepass nasıl oluşturulur?</a>
+                </div>
+            </div>
+
+        </main>
+
+        <footer>
+             <div class="banner-ad-container bottom-banner">
+                <div data-banner-id="6084110"></div>
+            </div>
+            <nav>
+                <button data-page="main-page" class="nav-button active" title="Ana Menü">Ana Menü</button>
+                <button data-page="shop-page" class="nav-button" title="Dükkan">Dükkan</button>
+                <button data-page="inventory-page" class="nav-button" title="Envanter">Envanter</button>
+                <button data-page="upgrade-page" class="nav-button" title="Yükselt">Yükselt</button>
+                <button data-page="convert-page" class="nav-button" title="Çevir">Çevir</button>
+            </nav>
+        </footer>
+    </div>
+
+    <!-- Robux Çekme Modalı -->
+    <div id="withdraw-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" data-modal="withdraw-modal">&times;</span>
+            <h2>Robux Çek</h2>
+            <p style="margin-bottom: 1rem;">Minimum 50 Robux çekilebilir.</p>
+            <p style="margin-bottom: 1rem;">Çekim için bir <a href="#" id="gamepass-info-link" class="how-to-link">Gamepass</a> oluşturmanız gerekmektedir.</p>
+            
+            <div class="withdraw-input-group">
+                <span class="input-icon">R$</span>
+                <input type="number" id="withdraw-amount-modal" placeholder="Miktar (min 50)">
+            </div>
+            
+            <div class="withdraw-input-group">
+                <span class="input-icon">🔗</span>
+                <input type="text" id="gamepass-url-modal" placeholder="Gamepass Linkiniz">
+            </div>
+            
+            <button id="withdraw-button-modal" class="action-button">Çekim Talebi Gönder</button>
+        </div>
+    </div>
+    
+    <!-- Gamepass Bilgi Modalı -->
+    <div id="gamepass-info-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" data-modal="gamepass-info-modal">&times;</span>
+            <h3>Gamepass Nasıl Oluşturulur?</h3>
+            <p style="text-align: left; margin-bottom: 1rem;">
+                Robux çekebilmek için, çekeceğiniz miktar kadar bir Gamepass oluşturup linkini ilgili alana yapıştırmanız gerekir. Örneğin, 50 Robux çekmek için 50 Robux değerinde bir Gamepass oluşturmalısınız.
+            </p>
+            <p style="text-align: left; margin-bottom: 1rem;">
+                <strong>Adımlar:</strong><br>
+                1. Roblox'un web sitesine gidin ve "Create" (Oluştur) sekmesine tıklayın.<br>
+                2. Herhangi bir "Experience" (Deneyim) seçin veya yeni bir tane oluşturun.<br>
+                3. Deneyim sayfasında, sol menüden "Associated Items" (İlişkili Öğeler) seçeneğine gidin.<br>
+                4. "Passes" sekmesine tıklayın ve "Create a Pass" butonuna basın.<br>
+                5. Gerekli bilgileri doldurup "Create Pass" butonuna tıklayın.<br>
+                6. Oluşturduğunuz Pass'e tıklayın, sol menüden "Sales" (Satış) seçeneğine gidin.<br>
+                7. "Item for Sale" seçeneğini aktif edin ve çekeceğiniz Robux miktarını "Price in Robux" kısmına girin.<br>
+                8. Değişiklikleri kaydedin ve tarayıcınızın adres çubuğundaki linki kopyalayıp uygulamadaki alana yapıştırın.
+            </p>
+            <p class="small-info">Not: Roblox, Gamepass satışlarından %30 komisyon almaktadır.</p>
+        </div>
+    </div>
+
+    <script src="audio.js"></script>
+    <script src="dragons.js"></script>
+    <script src="main.js" type="module"></script>
+</body>
+</html>
