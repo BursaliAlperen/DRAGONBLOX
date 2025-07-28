@@ -65,10 +65,25 @@ document.addEventListener('DOMContentLoaded', () => {
         robux: 0,
         dragons: {}, // { dragonId: { level: 1 } } -> Sadece sahip olunan ejderhalar
         equippedDragon: null,
+        /* @tweakable The starting egg cost for converting 1 Robux. */
         conversionCost: 50000, // Başlangıç çevirme maliyeti
         lastSaveTimestamp: Date.now(),
         language: 'tr', // Default language
     };
+
+    /* @tweakable The maximum level a dragon can reach through upgrades. */
+    const MAX_DRAGON_LEVEL = 20;
+    /* @tweakable The base cost for upgrading the free starter dragon (Red Dragon). */
+    const starterDragonUpgradeBaseCost = 5;
+    /* @tweakable The multiplier applied to a dragon's price to determine its base upgrade cost. */
+    const upgradeCostPriceMultiplier = 0.1;
+    /* @tweakable The exponential multiplier for upgrade costs. Higher value means costs increase faster per level. */
+    const upgradeCostLevelExponent = 2.4;
+    /* @tweakable The multiplier for increasing Robux conversion cost after buying a new dragon. */
+    const conversionCostIncreaseOnBuy = 1.4;
+    /* @tweakable The multiplier for increasing Robux conversion cost after an upgrade. */
+    const conversionCostIncreaseOnUpgrade = 1.02;
+
     let isSaving = false;
     let currentUserId = null;
     let gameLoopInterval = null;
@@ -302,9 +317,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const dragonState = gameState.dragons[dragonId];
         if (!dragonData || !dragonState) return Infinity;
         
-        // Altın ve sonrası için maliyet artışını yavaşlat
-        const costMultiplier = (dragonData.price > 500000) ? 1.5 : 2;
-        return dragonData.price * 0.1 * Math.pow(costMultiplier, dragonState.level - 1);
+        // Handle max level case for cost display
+        if (dragonState.level >= MAX_DRAGON_LEVEL) {
+            return Infinity;
+        }
+
+        const baseCost = dragonData.price > 0
+            ? dragonData.price * upgradeCostPriceMultiplier
+            : starterDragonUpgradeBaseCost;
+
+        return baseCost * Math.pow(upgradeCostLevelExponent, dragonState.level - 1);
     }
 
     function calculateConversionCost() {
@@ -324,9 +346,16 @@ document.addEventListener('DOMContentLoaded', () => {
             equippedDragonContainer.innerHTML = `<img src="${dragonData.image}" alt="${getDragonName(dragonData)}" title="${getDragonName(dragonData)}">`;
             eggRateDisplay.textContent = `${getTranslation('egg_rate_prefix')}${formatNumber(calculateEggRate())}`;
             
-            upgradeLevelDisplay.textContent = `${getTranslation('level_prefix')}${dragonState.level}`;
-            upgradeCostDisplay.textContent = `${getTranslation('upgrade_cost_prefix')}${formatNumber(calculateUpgradeCost())}`;
-            upgradeButton.disabled = gameState.eggs < calculateUpgradeCost();
+            if (dragonState.level >= MAX_DRAGON_LEVEL) {
+                upgradeLevelDisplay.textContent = `${getTranslation('level_prefix')}${dragonState.level} (MAX)`;
+                upgradeCostDisplay.textContent = getTranslation('upgrade_cost_prefix') + "---";
+                upgradeButton.disabled = true;
+            } else {
+                upgradeLevelDisplay.textContent = `${getTranslation('level_prefix')}${dragonState.level}`;
+                upgradeCostDisplay.textContent = `${getTranslation('upgrade_cost_prefix')}${formatNumber(calculateUpgradeCost())}`;
+                upgradeButton.disabled = gameState.eggs < calculateUpgradeCost();
+            }
+
         } else {
              equippedDragonContainer.innerHTML = `<p>${getTranslation('no_dragon_equipped')}</p>`;
              eggRateDisplay.textContent = `${getTranslation('egg_rate_prefix')}0`;
@@ -407,8 +436,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameState.eggs >= dragonData.price) {
             gameState.eggs -= dragonData.price;
             gameState.dragons[dragonId] = { level: 1 };
-             // Çevirme maliyetini %30 artır
-            gameState.conversionCost *= 1.30;
+            if (dragonData.price > 0) {
+                 // Çevirme maliyetini artır
+                gameState.conversionCost *= conversionCostIncreaseOnBuy;
+            }
             audioManager.playSound('purchase');
             showConfetti();
             updateAllGrids();
@@ -496,12 +527,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- YÜKSELTME ---
     function upgradeDragon() {
+        if (!gameState.equippedDragon) return;
+        
+        const dragonState = gameState.dragons[gameState.equippedDragon];
+        if (!dragonState || dragonState.level >= MAX_DRAGON_LEVEL) {
+            return; // Do nothing if at max level or no dragon
+        }
+
         const cost = calculateUpgradeCost();
         if (gameState.eggs >= cost) {
             gameState.eggs -= cost;
-            gameState.dragons[gameState.equippedDragon].level++;
-            // Her yükseltmede çevirme maliyetini %5 artır
-            gameState.conversionCost *= 1.05;
+            dragonState.level++;
+            // Her yükseltmede çevirme maliyetini artır
+            gameState.conversionCost *= conversionCostIncreaseOnUpgrade;
             audioManager.playSound('purchase');
             showConfetti();
             updateUI(); // Bu UI güncellemesi conversion cost'u da güncelleyecek

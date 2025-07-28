@@ -2,79 +2,100 @@ const DRAGONS = [
     {
         id: 'red_dragon',
         name: 'Kızıl Ejderha',
-        price: 50,
+        /* @tweakable The price of the red dragon. Setting to 0 makes it free. */
+        price: 0,
+        /* @tweakable The base egg earning rate per second for this dragon. */
         eggRate: 1,
         image: 'red_dragon.png'
     },
     {
         id: 'blue_dragon',
         name: 'Buz Ejderhası',
-        price: 500,
-        eggRate: 4,
+        /* @tweakable The price in eggs for the blue dragon. */
+        price: 5000, // 5K
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 5,
         image: 'blue_dragon.png'
     },
     {
         id: 'green_dragon',
         name: 'Doğa Ejderhası',
-        price: 5000,
-        eggRate: 15,
+        /* @tweakable The price in eggs for the green dragon. */
+        price: 50000, // 50K
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 20,
         image: 'green_dragon.png'
     },
     {
-        id: 'bee_dragon', // New
+        id: 'bee_dragon',
         name: 'Arı Ejderhası',
-        price: 30000,
-        eggRate: 40,
+        /* @tweakable The price in eggs for the bee dragon. */
+        price: 400000, // 400K
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 80,
         image: 'bee_dragon.png'
     },
     {
-        id: 'purple_dragon', // Rebalanced
+        id: 'purple_dragon',
         name: 'Fırtına Ejderhası',
-        price: 100000,
-        eggRate: 90,
+        /* @tweakable The price in eggs for the purple dragon. */
+        price: 3000000, // 3M
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 300,
         image: 'purple_dragon.png'
     },
     {
         id: 'gold_dragon',
         name: 'Altın Ejderha',
-        price: 500000,
-        eggRate: 200,
+        /* @tweakable The price in eggs for the gold dragon. */
+        price: 25000000, // 25M
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 1200,
         image: 'gold_dragon.png'
     },
     {
-        id: 'snake_dragon', // New
+        id: 'snake_dragon',
         name: 'Yılan Ejderha',
-        price: 2500000, // 2.5M
-        eggRate: 550,
+        /* @tweakable The price in eggs for the snake dragon. */
+        price: 200000000, // 200M
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 5000,
         image: 'snake_dragon.png'
     },
     {
-        id: 'shadow_dragon', // Rebalanced
+        id: 'shadow_dragon',
         name: 'Gölge Ejderhası',
-        price: 15000000, // 15M
-        eggRate: 1200,
+        /* @tweakable The price in eggs for the shadow dragon. */
+        price: 1800000000, // 1.8B
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 22000,
         image: 'shadow_dragon.png'
     },
     {
-        id: 'cosmic_dragon', // Rebalanced
+        id: 'cosmic_dragon',
         name: 'Kozmik Ejderha',
-        price: 200000000, // 200M
-        eggRate: 5000,
+        /* @tweakable The price in eggs for the cosmic dragon. */
+        price: 15000000000, // 15B
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 100000,
         image: 'cosmic_dragon.png'
     },
     {
-        id: 'phantom_dragon', // Rebalanced
+        id: 'phantom_dragon',
         name: 'Hayalet Ejderha',
-        price: 3000000000, // 3B
-        eggRate: 25000,
+        /* @tweakable The price in eggs for the phantom dragon. */
+        price: 120000000000, // 120B
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 450000,
         image: 'phantom_dragon.png'
     },
     {
-        id: 'sun_dragon', // New
+        id: 'sun_dragon',
         name: 'Güneş Ejderhası',
-        price: 50000000000, // 50B
-        eggRate: 100000,
+        /* @tweakable The price in eggs for the sun dragon. */
+        price: 1000000000000, // 1T
+        /* @tweakable The base egg earning rate per second for this dragon. */
+        eggRate: 2000000, // 2M
         image: 'sun_dragon.png'
     }
 ];
-
