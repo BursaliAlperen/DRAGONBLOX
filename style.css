@@ -79,22 +79,24 @@ body {
 #game-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for better mobile handling */
     /* SafeArea için dolgu */
-    padding: 1rem;
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-    padding-left: calc(1rem + env(safe-area-inset-left));
-    padding-right: calc(1rem + env(safe-area-inset-right));
-    max-width: 800px;
+    padding: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    padding-left: calc(0.5rem + env(safe-area-inset-left));
+    padding-right: calc(0.5rem + env(safe-area-inset-right));
+    max-width: 1200px; /* Increase max-width for larger screens */
     margin: 0 auto;
+    gap: 0.5rem; /* Add gap between header, main, footer */
 }
 
 header {
     text-align: center;
-    padding: 1rem;
+    padding: clamp(0.5rem, 2vw, 1rem);
     border-radius: var(--border-radius);
     background: rgba(0,0,0,0.4);
     backdrop-filter: blur(5px);
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .header-top-row {
@@ -107,7 +109,7 @@ header {
 
 .game-title {
     font-family: var(--font-title);
-    font-size: clamp(2rem, 10vw, 2.5rem); /* Akıcı font boyutu */
+    font-size: clamp(2rem, 8vw, 3rem); /* Adjusted clamp for better scaling */
     color: var(--primary-color);
     text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 4px 4px 5px #ff8c00;
     animation: float-title 3s ease-in-out infinite;
@@ -123,13 +125,15 @@ header {
     display: flex;
     justify-content: center;
     flex-grow: 1; /* Alabildiği kadar yer kaplasın */
-    gap: 1.5rem;
-    font-size: 1.2rem;
+    gap: clamp(1rem, 4vw, 1.5rem);
+    font-size: clamp(1rem, 3vw, 1.2rem);
     font-weight: 700;
 }
 
 .language-selector-container {
     /* Esnek genişlik için */
+    display: flex;
+    align-items: center;
 }
 
 #language-selector {
@@ -141,6 +145,7 @@ header {
     font-family: var(--font-body);
     font-weight: 700;
     cursor: pointer;
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
 }
 
 #language-selector:focus {
@@ -156,6 +161,7 @@ header {
     border-radius: 20px;
     border: 2px solid var(--secondary-color);
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    white-space: nowrap; /* Prevent number from wrapping */
 }
 
 .currency-item#robux-counter {
@@ -170,8 +176,8 @@ header {
 }
 
 .currency-item img {
-    width: 30px;
-    height: 30px;
+    width: clamp(25px, 6vw, 30px);
+    height: clamp(25px, 6vw, 30px);
     margin-right: 0.5rem;
 }
 
@@ -188,6 +194,7 @@ main {
     height: 100%; /* Allow pages to fill the main area */
     display: flex; /* Use flex to center content */
     flex-direction: column;
+    padding: 0 0.5rem; /* Add horizontal padding inside pages */
 }
 
 .page.scrollable-page {
@@ -197,8 +204,9 @@ main {
 }
 
 #main-page {
-    justify-content: center; /* Center dragon vertically */
-    align-items: center; /* Center dragon horizontally */
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    gap: 1.5rem;
 }
 
 #convert-page {
@@ -207,15 +215,20 @@ main {
     justify-content: center;
     align-items: center;
     height: 100%;
+    padding: 1rem;
 }
 
 #dragon-area {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 #equipped-dragon-container {
-    width: 250px;
-    height: 250px;
+    width: clamp(200px, 50vw, 250px);
+    height: clamp(200px, 50vw, 250px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -233,8 +246,8 @@ main {
 }
 
 #egg-rate {
-    margin-top: 1rem;
-    font-size: 1.2rem;
+    margin-top: 0; /* Remove margin, use gap instead */
+    font-size: clamp(1.1rem, 4vw, 1.3rem);
     font-weight: 700;
     background: rgba(0,0,0,0.5);
     padding: 0.5rem 1rem;
@@ -242,7 +255,7 @@ main {
 }
 
 #upgrade-section, #ad-rewards-section {
-    margin-top: 1.5rem;
+    margin: 1.5rem auto 0;
     text-align: center;
     background: rgba(0,0,0,0.4);
     padding: 1.5rem;
@@ -262,7 +275,7 @@ main {
 }
 
 #upgrade-cost, #upgrade-level {
-    font-size: 1rem;
+    font-size: clamp(1rem, 3vw, 1.1rem);
     margin-top: 0.5rem;
     font-weight: 700;
 }
@@ -281,8 +294,9 @@ main {
     justify-content: center;
     align-items: center;
     min-height: 50px; /* Reklam yüklenene kadar yer tutar */
-    max-height: 70px; /* Reklamın çok büyümesini engelle */
+    max-height: 90px; /* Reklamın çok büyümesini engelle */
     overflow: hidden; /* Taşmayı engelle */
+    flex-shrink: 0;
 }
 
 .banner-ad-container.top-banner {
@@ -291,7 +305,7 @@ main {
 }
 
 .convert-box {
-    margin-top: 1.5rem;
+    margin: 1.5rem auto 0;
     text-align: center;
     background: rgba(0,0,0,0.4);
     padding: 1.5rem;
@@ -341,6 +355,7 @@ main {
     font-size: 0.9rem;
     color: var(--secondary-color);
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .convert-box p {
@@ -364,15 +379,16 @@ footer {
     background: rgba(0,0,0,0.4);
     backdrop-filter: blur(5px);
     border-radius: var(--border-radius);
-    margin-top: auto; /* Footer'ı aşağıya iter */
-    margin-bottom: 1rem; /* Kullanıcının isteği üzerine yukarı taşımak için */
+    margin-top: auto; /* Push footer to bottom */
     display: flex;
     flex-direction: column;
+    flex-shrink: 0; /* Prevent footer from shrinking */
 }
 
 nav {
     display: flex;
     justify-content: space-around;
+    gap: 0.5rem;
 }
 
 .action-button, .nav-button {
@@ -393,13 +409,13 @@ nav {
 
 .nav-button {
     flex-grow: 1;
-    margin: 0 0.25rem;
-    padding: 0.8rem 0.5rem; /* Padding adjustment for smaller screens */
+    margin: 0;
+    padding: 0.5rem; /* Uniform padding */
     display: flex;
     flex-direction: column; /* Default to column for icon + text */
     justify-content: center;
     align-items: center;
-    gap: 0.3rem; /* Adjusted gap */
+    gap: 0.3rem;
     font-size: 0.7rem; /* Smaller font size for mobile */
     min-width: 55px; /* Ensure buttons have a minimum width */
     line-height: 1.1; /* Adjust line height */
@@ -439,7 +455,7 @@ nav {
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%;
+    height: 100dvh;
     overflow: auto;
     background-color: rgba(0,0,0,0.7);
     display: flex;
@@ -457,7 +473,7 @@ nav {
     max-width: 500px;
     position: relative;
     box-shadow: 0 0 20px var(--primary-color);
-    max-height: 90vh;
+    max-height: 90dvh;
     overflow-y: auto;
     text-align: center;
 }
@@ -502,6 +518,7 @@ nav {
     justify-content: space-between; /* İçeriği dikeyde yay */
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
+    overflow: hidden;
 }
 .item-card.equipped {
     border-color: #00ff00;
@@ -519,6 +536,7 @@ nav {
     object-fit: contain;
     margin: 0 auto 0.5rem; /* Add bottom margin */
     flex-shrink: 0; /* Resmin küçülmesini engelle */
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); /* Add a subtle shadow to dragon images */
 }
 
 .item-card .dragon-name {
@@ -528,6 +546,7 @@ nav {
     line-height: 1.1; /* Adjust line height */
     word-break: break-word; /* Yazıların taşmasını engelle */
     margin-bottom: 0.5rem; /* Alt boşluk ekle */
+    min-height: 2.2em; /* Reserve space for two lines */
 }
 
 .item-card .item-info {
@@ -579,124 +598,109 @@ nav {
     transition: opacity 0.5s ease-in-out;
 }
 
-/* --- Mobile Responsiveness --- */
+/* --- Responsive Design Adjustments --- */
 
-/* Medium screens (tablets) */
-@media (min-width: 601px) {
-    .nav-button {
-        flex-direction: row; /* Icon and text side-by-side */
-        font-size: 1rem;
-        min-width: auto;
-        padding: 0.8rem 1rem;
-    }
-
-    .nav-button img {
-        display: none; /* Hide icons on larger screens */
-    }
-
+/* Very small phones */
+@media (max-width: 360px) {
     .nav-button span {
-        display: block; /* Make sure text is visible */
+        display: none; /* Hide text on very narrow screens to prevent clutter */
+    }
+    .nav-button {
+        min-width: 0;
+    }
+    .currency-display {
+        gap: 0.5rem;
+    }
+    .currency-item {
+        padding: 0.4rem 0.6rem;
     }
 }
 
-/* Small screens (phones) */
-@media (max-width: 600px) {
-    body {
-        font-size: 14px;
-    }
+/* Larger Phones */
+@media (min-width: 361px) and (max-width: 600px) {
+     /* Styles for standard phones are mostly default */
     #game-container {
         padding: 0.5rem;
         padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
         padding-left: calc(0.5rem + env(safe-area-inset-left));
         padding-right: calc(0.5rem + env(safe-area-inset-right));
-    }
-    .game-title {
-        font-size: 2rem;
-    }
-    header {
-        padding: 0.5rem;
-    }
-    .currency-display {
-        font-size: 1rem;
         gap: 0.5rem;
-        font-weight: 700;
-    }
-    .currency-item {
-        padding: 0.4rem 0.8rem;
-    }
-    .currency-item img {
-        width: 25px;
-        height: 25px;
     }
     main {
-        padding: 0.5rem 0;
+        padding: 0;
     }
-    #equipped-dragon-container {
-        width: 180px;
-        height: 180px;
-    }
-    #egg-rate {
-        font-size: 1rem;
-    }
+}
 
-    /* Footer Nav: Use icons on small screens */
-    nav {
-        flex-wrap: nowrap; /* Prevent wrapping on smallest screens */
-        justify-content: space-around;
-        gap: 0.25rem;
+
+/* Tablets and larger screens */
+@media (min-width: 601px) {
+    #game-container {
+        padding: 1rem;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+        padding-left: calc(1rem + env(safe-area-inset-left));
+        padding-right: calc(1rem + env(safe-area-inset-right));
+        gap: 1rem;
     }
 
     .nav-button {
-        flex-direction: column;
-        font-size: 0.7rem;
-        padding: 0.4rem 0.2rem;
-        margin: 0;
-        min-width: 50px; /* Give buttons a minimum width */
-        gap: 0.2rem; /* Reduce gap for smallest screens */
+        flex-direction: row; /* Icon and text side-by-side */
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+        gap: 0.5rem;
     }
     .nav-button img {
-        display: block; /* Show icons */
-    }
-    .nav-button span {
-        display: block; /* Show text */
-    }
-
-
-    .action-button {
-       width: 100%;
-       padding: 1rem;
-       font-size: 1rem;
+        display: block; /* Show icons again */
+        width: 24px;
+        height: 24px;
     }
 
-    .modal-content {
-        width: 95%;
-        padding: 15px;
+    #main-page {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
     }
-    .modal-content h2 {
-        font-size: 1.5rem;
+    #dragon-area {
+        flex-direction: column;
+        gap: 2rem;
     }
+    #equipped-dragon-container {
+        width: clamp(250px, 30vw, 350px);
+        height: clamp(250px, 30vw, 350px);
+    }
+    .page.scrollable-page {
+        padding: 1.5rem;
+    }
+
     #shop-grid, #inventory-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 0.5rem;
-        padding: 0.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1.5rem;
     }
     .item-card {
-        padding: 0.5rem;
+        padding: 1.5rem 1rem;
     }
     .item-card img {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 0.25rem;
+        width: 100px;
+        height: 100px;
     }
     .item-card .dragon-name {
-        font-size: 0.8rem;
+        font-size: 1.1rem;
     }
     .item-card .item-info, .item-card .item-price {
-         font-size: 0.65rem;
+        font-size: 0.8rem;
     }
     .item-card .item-button {
-        font-size: 0.7rem;
-        padding: 0.4rem;
-        margin-top: 0.5rem;
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+}
+
+/* Large desktops */
+@media (min-width: 1025px) {
+    .nav-button span {
+        display: block; /* Ensure text is visible */
+    }
+    .nav-button img {
+        display: none; /* Hide icon on very large screens for a cleaner look */
     }
 }
