@@ -1,6 +1,23 @@
 const translations = {
     en: {
         loading: "Loading...",
+        // Auth
+        auth_login_title: "Login",
+        auth_register_title: "Register",
+        auth_login_button: "Login",
+        auth_register_button: "Register",
+        auth_logout: "Logout",
+        auth_email_placeholder: "Email",
+        auth_password_placeholder: "Password",
+        auth_password_min_char: "Password (min. 6 characters)",
+        auth_error_invalid_email: "Invalid email format.",
+        auth_error_user_not_found: "User not found. Please check your email or register.",
+        auth_error_wrong_password: "Incorrect password. Please try again.",
+        auth_error_email_in_use: "This email is already in use by another account.",
+        auth_error_weak_password: "Password should be at least 6 characters.",
+        auth_error_generic: "An error occurred. Please try again.",
+        auth_logging_in: "Logging in...",
+        auth_registering: "Registering...",
         // Navigation
         nav_main_menu: "Main Menu",
         nav_shop: "Shop",
@@ -92,6 +109,23 @@ const translations = {
     },
     tr: {
         loading: "Yükleniyor...",
+        // Auth
+        auth_login_title: "Giriş Yap",
+        auth_register_title: "Kayıt Ol",
+        auth_login_button: "Giriş Yap",
+        auth_register_button: "Kayıt Ol",
+        auth_logout: "Çıkış Yap",
+        auth_email_placeholder: "E-posta",
+        auth_password_placeholder: "Şifre",
+        auth_password_min_char: "Şifre (en az 6 karakter)",
+        auth_error_invalid_email: "Geçersiz e-posta formatı.",
+        auth_error_user_not_found: "Kullanıcı bulunamadı. Lütfen e-postanızı kontrol edin veya kayıt olun.",
+        auth_error_wrong_password: "Yanlış şifre. Lütfen tekrar deneyin.",
+        auth_error_email_in_use: "Bu e-posta zaten başka bir hesap tarafından kullanılıyor.",
+        auth_error_weak_password: "Şifre en az 6 karakter olmalıdır.",
+        auth_error_generic: "Bir hata oluştu. Lütfen tekrar deneyin.",
+        auth_logging_in: "Giriş yapılıyor...",
+        auth_registering: "Kayıt olunuyor...",
         // Navigation
         nav_main_menu: "Ana Menü",
         nav_shop: "Dükkan",

@@ -16,7 +16,28 @@
     </script>
 </head>
 <body>
-    <div id="loading-screen">
+    <div id="auth-container">
+        <div class="auth-box">
+            <h1 class="game-title">DRAGONBLOX</h1>
+            <div class="auth-toggle">
+                <button id="show-login-btn" class="active" data-translate="auth_login_title">Giriş Yap</button>
+                <button id="show-register-btn" data-translate="auth_register_title">Kayıt Ol</button>
+            </div>
+            <form id="login-form" class="auth-form">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Şifre" required>
+                <button type="submit" class="action-button" data-translate="auth_login_button">Giriş Yap</button>
+            </form>
+            <form id="register-form" class="auth-form hidden">
+                <input type="email" id="register-email" placeholder="Email" required>
+                <input type="password" id="register-password" placeholder="Şifre (en az 6 karakter)" required>
+                <button type="submit" class="action-button" data-translate="auth_register_button">Kayıt Ol</button>
+            </form>
+            <p id="auth-error" class="auth-error-message hidden"></p>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="hidden">
         <img src="red_dragon.png" alt="Ejderha Yükleniyor" class="loading-dragon">
         <div class="spinner"></div>
         <p>Yükleniyor...</p>
@@ -43,6 +64,7 @@
                         <option value="en">🇬🇧 English</option>
                     </select>
                 </div>
+                 <button id="logout-button" class="action-button hidden" data-translate="auth_logout">Çıkış Yap</button>
             </div>
              <div class="banner-ad-container top-banner">
                 <div data-banner-id="6084105"></div>
@@ -175,6 +197,11 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script src="firebase.js"></script>
     <script src="audio.js"></script>
     <script src="languages.js"></script>
     <script src="dragons.js"></script>

@@ -1,6 +1,25 @@
 import confetti from 'canvas-confetti';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Firebase
+    const { 
+        signUp, 
+        signIn, 
+        signOutUser, 
+        onAuth,
+        saveGameToFirestore,
+        loadGameFromFirestore
+    } = window.firebaseManager;
+
+    // Auth Screen
+    const authContainer = document.getElementById('auth-container');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const showLoginBtn = document.getElementById('show-login-btn');
+    const showRegisterBtn = document.getElementById('show-register-btn');
+    const authErrorDisplay = document.getElementById('auth-error');
+    const logoutButton = document.getElementById('logout-button');
+
     // DOM Öğeleri
     const loadingScreen = document.getElementById('loading-screen');
     const gameContainer = document.getElementById('game-container');
@@ -51,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         language: 'tr', // Default language
     };
     let isSaving = false;
+    let currentUserId = null;
+    let gameLoopInterval = null;
+    let saveGameInterval = null;
 
     // --- DİL YÖNETİMİ ---
     let currentLanguage = 'tr';
@@ -67,6 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // Update placeholders
+        document.getElementById('login-email').placeholder = getTranslation('auth_email_placeholder');
+        document.getElementById('login-password').placeholder = getTranslation('auth_password_placeholder');
+        document.getElementById('register-email').placeholder = getTranslation('auth_email_placeholder');
+        document.getElementById('register-password').placeholder = getTranslation('auth_password_min_char');
+
         const withdrawAmountInput = document.getElementById('withdraw-amount-modal');
         if(withdrawAmountInput) withdrawAmountInput.placeholder = getTranslation('withdraw_placeholder_amount');
 
@@ -96,16 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- OYUN YÖNETİMİ ---
-    function saveGame() {
-        if (isSaving) return;
+    async function saveGame() {
+        if (isSaving || !currentUserId) return;
         isSaving = true;
         savingIndicator.textContent = getTranslation('saving_indicator_saving');
         savingIndicator.classList.remove('hidden');
         savingIndicator.style.opacity = '1';
 
         try {
-            gameState.lastSaveTimestamp = Date.now();
-            localStorage.setItem('dragonblox_save', JSON.stringify(gameState));
+            await saveGameToFirestore(currentUserId, gameState);
             
             setTimeout(() => {
                 savingIndicator.textContent = getTranslation('saving_indicator_saved');
@@ -119,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 200);
 
         } catch (e) {
-            console.error("Could not save game state to localStorage:", e);
+            console.error("Could not save game state to Firestore:", e);
             savingIndicator.textContent = getTranslation('saving_indicator_error');
             setTimeout(() => {
                 savingIndicator.style.opacity = '0';
@@ -131,27 +157,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function loadGame() {
-        const savedGame = localStorage.getItem('dragonblox_save');
+    async function loadGame(userId) {
+        const savedGame = await loadGameFromFirestore(userId);
+        
         if (savedGame) {
-            let parsedGame = JSON.parse(savedGame);
-            
-            // Eski save dosyaları için uyumluluk
-            if (parsedGame.conversionCost === undefined) {
-                 parsedGame.conversionCost = 50000;
-            }
-            if (parsedGame.lastSaveTimestamp === undefined) {
-                parsedGame.lastSaveTimestamp = Date.now();
-            }
-            if (parsedGame.language === undefined) {
+            // Merge loaded data with defaults to prevent missing properties
+            gameState = {
+                ...gameState, // Keep defaults for any new properties
+                ...savedGame,
+            };
+
+            // Geriye dönük uyumluluk için eski save dosyalarını düzelt
+            if (!gameState.dragons) gameState.dragons = {};
+             if (gameState.conversionCost === undefined) gameState.conversionCost = 50000;
+             if (gameState.language === undefined) {
                 const browserLang = navigator.language.split('-')[0];
-                parsedGame.language = (browserLang === 'en') ? 'en' : 'tr';
+                gameState.language = (browserLang === 'en') ? 'en' : 'tr';
             }
             // Eski save'lerden adProgress'i temizle
-            if (parsedGame.adProgress !== undefined) {
-                delete parsedGame.adProgress;
+            if (gameState.adProgress !== undefined) {
+                delete gameState.adProgress;
             }
-            gameState = parsedGame;
             
             // Geriye dönük uyumluluk için eski save dosyalarını düzelt
             if (gameState.dragons) {
@@ -165,12 +191,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             // Yeni oyuncu
-            gameState.eggs = 0;
-            gameState.robux = 0;
-            gameState.dragons = { 'red_dragon': { level: 1 } };
-            gameState.equippedDragon = 'red_dragon';
-            gameState.conversionCost = 50000;
-            gameState.lastSaveTimestamp = Date.now();
+            gameState = {
+                eggs: 0,
+                robux: 0,
+                dragons: { 'red_dragon': { level: 1 } },
+                equippedDragon: 'red_dragon',
+                conversionCost: 50000,
+                language: 'tr',
+            };
             const browserLang = navigator.language.split('-')[0];
             gameState.language = (browserLang === 'en') ? 'en' : 'tr';
         }
@@ -178,21 +206,66 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAllGrids();
     }
     
-    function init() {
-        loadGame();
-        setupEventListeners();
-        checkOfflineEarnings(); // Çevrimdışı kazançları yüklemeden sonra kontrol et
+    function startGame() {
+        // Stop any existing intervals
+        if(gameLoopInterval) clearInterval(gameLoopInterval);
+        if(saveGameInterval) clearInterval(saveGameInterval);
         
-        // Yükleme ekranını gizle ve oyunu başlat
-        // checkOfflineEarnings zaten gameContainer'ı gösteriyor, tekrar yapmaya gerek yok.
-        if (loadingScreen) {
-             loadingScreen.classList.add('hidden');
-        }
-        document.getElementById('loading-screen').querySelector('p').textContent = getTranslation('loading');
+        // Show the game and hide loading/auth screens
+        loadingScreen.classList.add('hidden');
+        authContainer.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+        logoutButton.classList.remove('hidden');
 
-        setInterval(gameLoop, 1000);
-        // Save every 15 seconds as a fallback
-        setInterval(saveGame, 15000);
+        document.dispatchEvent(new Event('play-music-event'));
+
+        gameLoopInterval = setInterval(gameLoop, 1000);
+        saveGameInterval = setInterval(saveGame, 15000);
+    }
+    
+    function resetGame() {
+        // Stop intervals
+        if(gameLoopInterval) clearInterval(gameLoopInterval);
+        if(saveGameInterval) clearInterval(saveGameInterval);
+
+        // Reset state
+        currentUserId = null;
+        gameState = {
+            eggs: 0,
+            robux: 0,
+            dragons: {},
+            equippedDragon: null,
+            conversionCost: 50000,
+            language: 'tr',
+        };
+
+        // Show auth screen, hide game
+        gameContainer.classList.add('hidden');
+        logoutButton.classList.add('hidden');
+        authContainer.classList.remove('hidden');
+        document.getElementById('loading-screen').classList.add('hidden');
+        
+        // Reset UI to default state
+        switchPage('main-page');
+        translateUI();
+    }
+    
+    function init() {
+        setupEventListeners();
+        
+        onAuth(async (user) => {
+            if (user) {
+                // User is signed in.
+                currentUserId = user.uid;
+                authContainer.classList.add('hidden');
+                loadingScreen.classList.remove('hidden');
+                await loadGame(user.uid);
+                startGame();
+            } else {
+                // User is signed out.
+                resetGame();
+            }
+        });
     }
     
     function gameLoop() {
@@ -205,8 +278,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ÇEVRİMDIŞI KAZANÇ ---
     function checkOfflineEarnings() {
-        // Offline earnings removed as per user request.
-        // This function now just ensures the game container is visible and music starts.
+        // This function is no longer needed with Firestore saves.
+        // It's kept to avoid breaking calls but its content can be removed.
         gameContainer.classList.remove('hidden');
         document.dispatchEvent(new Event('play-music-event'));
     }
@@ -570,11 +643,53 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- OLAY DİNLEYİCİLER ---
     function setupEventListeners() {
-        // Dil Değiştirici
-        languageSelector.addEventListener('change', (e) => {
-            gameState.language = e.target.value;
-            translateUI();
-            saveGame();
+        // Auth Listeners
+        showLoginBtn.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            showLoginBtn.classList.add('active');
+            showRegisterBtn.classList.remove('active');
+            authErrorDisplay.classList.add('hidden');
+        });
+        
+        showRegisterBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            showLoginBtn.classList.remove('active');
+            showRegisterBtn.classList.add('active');
+            authErrorDisplay.classList.add('hidden');
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            showAuthError(getTranslation('auth_logging_in'), false);
+            const error = await signIn(email, password);
+            if (error) {
+                showAuthError(getTranslation(error));
+            } else {
+                authErrorDisplay.classList.add('hidden');
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            showAuthError(getTranslation('auth_registering'), false);
+            const error = await signUp(email, password);
+            if (error) {
+                showAuthError(getTranslation(error));
+            } else {
+                authErrorDisplay.classList.add('hidden');
+            }
+        });
+
+        logoutButton.addEventListener('click', () => {
+            saveGame().then(() => {
+                signOutUser();
+            });
         });
 
         // Navigasyon
@@ -647,6 +762,12 @@ document.addEventListener('DOMContentLoaded', () => {
         upgradeButton.addEventListener('click', () => {
             upgradeDragon();
         });
+    }
+
+    function showAuthError(message, isError = true) {
+        authErrorDisplay.textContent = message;
+        authErrorDisplay.classList.remove('hidden');
+        authErrorDisplay.style.color = isError ? 'red' : 'white';
     }
 
     // Oyunu başlat
