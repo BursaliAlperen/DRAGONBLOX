@@ -23,16 +23,25 @@
     </div>
 
     <div id="game-container" class="hidden">
+        <div id="saving-indicator" class="hidden">Kaydediliyor...</div>
         <header>
             <h1 class="game-title">DRAGONBLOX</h1>
-            <div class="currency-display">
-                <div id="egg-counter" class="currency-item">
-                    <img src="egg_icon.png" alt="Yumurta">
-                    <span id="eggs">0</span>
+            <div class="header-top-row">
+                <div class="currency-display">
+                    <div id="egg-counter" class="currency-item">
+                        <img src="egg_icon.png" alt="Yumurta">
+                        <span id="eggs">0</span>
+                    </div>
+                    <div id="robux-counter" class="currency-item" title="Robux Çek">
+                        <img src="robux_icon.png" alt="Robux">
+                        <span id="robux">0</span>
+                    </div>
                 </div>
-                <div id="robux-counter" class="currency-item" title="Robux Çek">
-                    <img src="robux_icon.png" alt="Robux">
-                    <span id="robux">0</span>
+                <div class="language-selector-container">
+                    <select id="language-selector">
+                        <option value="tr">🇹🇷 Türkçe</option>
+                        <option value="en">🇬🇧 English</option>
+                    </select>
                 </div>
             </div>
              <div class="banner-ad-container top-banner">
@@ -48,43 +57,43 @@
                     <div id="equipped-dragon-container">
                         <!-- Takılan ejderha buraya gelecek -->
                     </div>
-                    <button id="collect-eggs-button" class="action-button hidden">
+                    <button id="collect-eggs-button" class="action-button hidden" data-translate="collect_eggs">
                         Yumurtaları Topla
                     </button>
-                    <p id="egg-rate">Yumurta/s: 0</p>
+                    <p id="egg-rate" data-translate-prefix="egg_rate_prefix">Yumurta/s: 0</p>
                 </div>
             </div>
 
             <!-- Dükkan Sayfası -->
             <div id="shop-page" class="page hidden scrollable-page">
-                <h2>Dükkan</h2>
+                <h2 data-translate="shop_title">Dükkan</h2>
                 <div id="shop-grid" class="grid-container"></div>
             </div>
 
             <!-- Envanter Sayfası -->
             <div id="inventory-page" class="page hidden scrollable-page">
-                 <h2>Envanter</h2>
+                 <h2 data-translate="inventory_title">Envanter</h2>
                 <div id="inventory-grid" class="grid-container"></div>
             </div>
 
              <!-- Yükseltme Sayfası -->
             <div id="upgrade-page" class="page hidden">
-                <h2>Yükseltmeler</h2>
+                <h2 data-translate="upgrades_title">Yükseltmeler</h2>
                 <div id="upgrade-section">
-                     <p>Mevcut Ejderhanı Yükselt</p>
-                     <p id="upgrade-level">Seviye: 1</p>
-                     <p id="upgrade-cost">Yükseltme Bedeli: 100 Yumurta</p>
-                     <button id="upgrade-button" class="action-button">Yükselt</button>
+                     <p data-translate="upgrade_current_dragon">Mevcut Ejderhanı Yükselt</p>
+                     <p id="upgrade-level" data-translate-prefix="level_prefix">Seviye: 1</p>
+                     <p id="upgrade-cost" data-translate-prefix="upgrade_cost_prefix">Yükseltme Bedeli: 100 Yumurta</p>
+                     <button id="upgrade-button" class="action-button" data-translate="upgrade_button">Yükselt</button>
                 </div>
             </div>
 
             <!-- Çevirme Sayfası -->
             <div id="convert-page" class="page hidden">
                 <div class="convert-box">
-                    <h3>Yumurtaları Robux'a Çevir</h3>
+                    <h3 data-translate="convert_title">Yumurtaları Robux'a Çevir</h3>
                     <p id="convert-rate-info">1 Robux = 50,000 Yumurta</p>
-                    <p class="small-info">Not: Her çevirme sonrası bedel artacaktır.</p>
-                    <button id="convert-robux-button" class="action-button">Hepsini Çevir</button>
+                    <p class="small-info" data-translate="convert_note">Not: Her çevirme sonrası bedel artacaktır.</p>
+                    <button id="convert-robux-button" class="action-button" data-translate="convert_all_button">Hepsini Çevir</button>
                 </div>
             </div>
 
@@ -97,23 +106,23 @@
             <nav id="main-nav">
                 <button data-page="main-page" class="nav-button active" title="Ana Menü">
                     <img src="home_icon.png" alt="Ana Menü">
-                    <span>Ana Menü</span>
+                    <span data-translate="nav_main_menu">Ana Menü</span>
                 </button>
                 <button data-page="shop-page" class="nav-button" title="Dükkan">
                     <img src="shop_icon.png" alt="Dükkan">
-                    <span>Dükkan</span>
+                    <span data-translate="nav_shop">Dükkan</span>
                 </button>
                 <button data-page="inventory-page" class="nav-button" title="Envanter">
                     <img src="inventory_icon.png" alt="Envanter">
-                    <span>Envanter</span>
+                    <span data-translate="nav_inventory">Envanter</span>
                 </button>
                 <button data-page="upgrade-page" class="nav-button" title="Yükselt">
                     <img src="upgrade_icon.png" alt="Yükselt">
-                    <span>Yükselt</span>
+                    <span data-translate="nav_upgrade">Yükselt</span>
                 </button>
                 <button data-page="convert-page" class="nav-button" title="Çevir">
                     <img src="convert_icon.png" alt="Çevir">
-                    <span>Çevir</span>
+                    <span data-translate="nav_convert">Çevir</span>
                 </button>
             </nav>
         </footer>
@@ -123,9 +132,9 @@
     <div id="withdraw-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-button" data-modal="withdraw-modal">&times;</span>
-            <h2>Robux Çek</h2>
-            <p style="margin-bottom: 1rem;">Minimum 50 Robux çekilebilir.</p>
-            <p style="margin-bottom: 1rem;">Çekim için bir <a href="#" id="gamepass-info-link" class="how-to-link">Gamepass</a> oluşturmanız gerekmektedir.</p>
+            <h2 data-translate="withdraw_robux_title">Robux Çek</h2>
+            <p style="margin-bottom: 1rem;" data-translate="withdraw_min_amount">Minimum 50 Robux çekilebilir.</p>
+            <p style="margin-bottom: 1rem;" data-translate="withdraw_gamepass_info">Çekim için bir <a href="#" id="gamepass-info-link" class="how-to-link" data-translate="gamepass_link">Gamepass</a> oluşturmanız gerekmektedir.</p>
             
             <div class="withdraw-input-group">
                 <span class="input-icon">R$</span>
@@ -137,7 +146,7 @@
                 <input type="text" id="gamepass-url-modal" placeholder="Gamepass Linkiniz">
             </div>
             
-            <button id="withdraw-button-modal" class="action-button">Çekim Talebi Gönder</button>
+            <button id="withdraw-button-modal" class="action-button" data-translate="withdraw_button">Çekim Talebi Gönder</button>
         </div>
     </div>
     
@@ -145,26 +154,29 @@
     <div id="gamepass-info-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-button" data-modal="gamepass-info-modal">&times;</span>
-            <h3>Gamepass Nasıl Oluşturulur?</h3>
-            <p style="text-align: left; margin-bottom: 1rem;">
-                Robux çekebilmek için, çekeceğiniz miktar kadar bir Gamepass oluşturup linkini ilgili alana yapıştırmanız gerekir. Örneğin, 50 Robux çekmek için 50 Robux değerinde bir Gamepass oluşturmalısınız.
-            </p>
-            <p style="text-align: left; margin-bottom: 1rem;">
-                <strong>Adımlar:</strong><br>
-                1. Roblox'un web sitesine gidin ve "Create" (Oluştur) sekmesine tıklayın.<br>
-                2. Herhangi bir "Experience" (Deneyim) seçin veya yeni bir tane oluşturun.<br>
-                3. Deneyim sayfasında, sol menüden "Associated Items" (İlişkili Öğeler) seçeneğine gidin.<br>
-                4. "Passes" sekmesine tıklayın ve "Create a Pass" butonuna basın.<br>
-                5. Gerekli bilgileri doldurup "Create Pass" butonuna tıklayın.<br>
-                6. Oluşturduğunuz Pass'e tıklayın, sol menüden "Sales" (Satış) seçeneğine gidin.<br>
-                7. "Item for Sale" seçeneğini aktif edin ve çekeceğiniz Robux miktarını "Price in Robux" kısmına girin.<br>
-                8. Değişiklikleri kaydedin ve tarayıcınızın adres çubuğundaki linki kopyalayıp uygulamadaki alana yapıştırın.
-            </p>
-            <p class="small-info">Not: Roblox, Gamepass satışlarından %30 komisyon almaktadır.</p>
+            <h3 data-translate="gamepass_tutorial_title">Gamepass Nasıl Oluşturulur?</h3>
+            <div data-translate="gamepass_tutorial_steps">
+                <p style="text-align: left; margin-bottom: 1rem;">
+                    Robux çekebilmek için, çekeceğiniz miktar kadar bir Gamepass oluşturup linkini ilgili alana yapıştırmanız gerekir. Örneğin, 50 Robux çekmek için 50 Robux değerinde bir Gamepass oluşturmalısınız.
+                </p>
+                <p style="text-align: left; margin-bottom: 1rem;">
+                    <strong>Adımlar:</strong><br>
+                    1. Roblox'un web sitesine gidin ve "Create" (Oluştur) sekmesine tıklayın.<br>
+                    2. Herhangi bir "Experience" (Deneyim) seçin veya yeni bir tane oluşturun.<br>
+                    3. Deneyim sayfasında, sol menüden "Associated Items" (İlişkili Öğeler) seçeneğine gidin.<br>
+                    4. "Passes" sekmesine tıklayın ve "Create a Pass" butonuna basın.<br>
+                    5. Gerekli bilgileri doldurup "Create Pass" butonuna tıklayın.<br>
+                    6. Oluşturduğunuz Pass'e tıklayın, sol menüden "Sales" (Satış) seçeneğine gidin.<br>
+                    7. "Item for Sale" seçeneğini aktif edin ve çekeceğiniz Robux miktarını "Price in Robux" kısmına girin.<br>
+                    8. Değişiklikleri kaydedin ve tarayıcınızın adres çubuğundaki linki kopyalayıp uygulamadaki alana yapıştırın.
+                </p>
+            </div>
+            <p class="small-info" data-translate="gamepass_commission_note">Not: Roblox, Gamepass satışlarından %30 komisyon almaktadır.</p>
         </div>
     </div>
 
     <script src="audio.js"></script>
+    <script src="languages.js"></script>
     <script src="dragons.js"></script>
     <script src="main.js" type="module"></script>
     <script async src="https://js.onclckmn.com/static/onclicka.js" data-admpid="353937"></script>

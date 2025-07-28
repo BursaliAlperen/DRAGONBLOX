@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const upgradeButton = document.getElementById('upgrade-button');
     const upgradeCostDisplay = document.getElementById('upgrade-cost');
     const upgradeLevelDisplay = document.getElementById('upgrade-level');
+    const savingIndicator = document.getElementById('saving-indicator');
+    const languageSelector = document.getElementById('language-selector');
     
     // Butonlar
     const convertRobuxButton = document.getElementById('convert-robux-button');
@@ -46,15 +48,86 @@ document.addEventListener('DOMContentLoaded', () => {
         equippedDragon: null,
         conversionCost: 50000, // Başlangıç çevirme maliyeti
         lastSaveTimestamp: Date.now(),
+        language: 'tr', // Default language
     };
+    let isSaving = false;
+
+    // --- DİL YÖNETİMİ ---
+    let currentLanguage = 'tr';
+
+    function translateUI() {
+        currentLanguage = gameState.language || 'tr';
+        languageSelector.value = currentLanguage;
+        
+        document.querySelectorAll('[data-translate]').forEach(el => {
+            const key = el.getAttribute('data-translate');
+            if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                el.innerHTML = translations[currentLanguage][key];
+            }
+        });
+        
+        // Update placeholders
+        const withdrawAmountInput = document.getElementById('withdraw-amount-modal');
+        if(withdrawAmountInput) withdrawAmountInput.placeholder = getTranslation('withdraw_placeholder_amount');
+
+        const gamepassUrlInput = document.getElementById('gamepass-url-modal');
+        if(gamepassUrlInput) gamepassUrlInput.placeholder = getTranslation('withdraw_placeholder_url');
+        
+        // Update titles that are not handled by the loop
+        document.querySelector('button[data-page="main-page"]').title = getTranslation('nav_main_menu');
+        document.querySelector('button[data-page="shop-page"]').title = getTranslation('nav_shop');
+        document.querySelector('button[data-page="inventory-page"]').title = getTranslation('nav_inventory');
+        document.querySelector('button[data-page="upgrade-page"]').title = getTranslation('nav_upgrade');
+        document.querySelector('button[data-page="convert-page"]').title = getTranslation('nav_convert');
+        document.getElementById('robux-counter').title = getTranslation('withdraw_robux_title');
+
+
+        // Re-render dynamic content that needs translation
+        updateUI();
+        updateAllGrids();
+    }
+
+    function getTranslation(key, replacements = {}) {
+        let text = translations[currentLanguage]?.[key] || translations['tr']?.[key] || `[${key}]`;
+        for (const placeholder in replacements) {
+            text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+        }
+        return text;
+    }
 
     // --- OYUN YÖNETİMİ ---
     function saveGame() {
+        if (isSaving) return;
+        isSaving = true;
+        savingIndicator.textContent = getTranslation('saving_indicator_saving');
+        savingIndicator.classList.remove('hidden');
+        savingIndicator.style.opacity = '1';
+
         try {
             gameState.lastSaveTimestamp = Date.now();
             localStorage.setItem('dragonblox_save', JSON.stringify(gameState));
+            
+            setTimeout(() => {
+                savingIndicator.textContent = getTranslation('saving_indicator_saved');
+                setTimeout(() => {
+                    savingIndicator.style.opacity = '0';
+                    setTimeout(() => {
+                        savingIndicator.classList.add('hidden');
+                        isSaving = false;
+                    }, 500);
+                }, 1000);
+            }, 200);
+
         } catch (e) {
             console.error("Could not save game state to localStorage:", e);
+            savingIndicator.textContent = getTranslation('saving_indicator_error');
+            setTimeout(() => {
+                savingIndicator.style.opacity = '0';
+                 setTimeout(() => {
+                    savingIndicator.classList.add('hidden');
+                    isSaving = false;
+                }, 500);
+            }, 2000);
         }
     }
 
@@ -69,6 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (parsedGame.lastSaveTimestamp === undefined) {
                 parsedGame.lastSaveTimestamp = Date.now();
+            }
+            if (parsedGame.language === undefined) {
+                const browserLang = navigator.language.split('-')[0];
+                parsedGame.language = (browserLang === 'en') ? 'en' : 'tr';
             }
             // Eski save'lerden adProgress'i temizle
             if (parsedGame.adProgress !== undefined) {
@@ -94,21 +171,28 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.equippedDragon = 'red_dragon';
             gameState.conversionCost = 50000;
             gameState.lastSaveTimestamp = Date.now();
+            const browserLang = navigator.language.split('-')[0];
+            gameState.language = (browserLang === 'en') ? 'en' : 'tr';
         }
-        updateUI();
+        translateUI(); // Translate after loading the correct language
         updateAllGrids();
     }
     
     function init() {
         loadGame();
         setupEventListeners();
+        checkOfflineEarnings(); // Çevrimdışı kazançları yüklemeden sonra kontrol et
         
         // Yükleme ekranını gizle ve oyunu başlat
-        loadingScreen.classList.add('hidden');
-        gameContainer.classList.remove('hidden');
-        document.dispatchEvent(new Event('play-music-event'));
+        // checkOfflineEarnings zaten gameContainer'ı gösteriyor, tekrar yapmaya gerek yok.
+        if (loadingScreen) {
+             loadingScreen.classList.add('hidden');
+        }
+        document.getElementById('loading-screen').querySelector('p').textContent = getTranslation('loading');
 
         setInterval(gameLoop, 1000);
+        // Save every 15 seconds as a fallback
+        setInterval(saveGame, 15000);
     }
     
     function gameLoop() {
@@ -117,8 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.eggs += eggRate;
             updateUI();
         }
-        // Oyunu her saniye kaydet
-        saveGame();
     }
 
     // --- ÇEVRİMDIŞI KAZANÇ ---
@@ -137,7 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (offlineEggs > 1) {
                 offlineEggs = Math.floor(offlineEggs);
                 gameState.eggs += offlineEggs; // Directly add earnings
-                alert(`Çevrimdışıyken ${formatNumber(offlineEggs)} yumurta kazandın!`);
+                alert(getTranslation('offline_earnings_alert', { amount: formatNumber(offlineEggs) }));
+                updateUI(); // Alert sonrası UI'ı güncelle
             }
         } 
         // Always start the game now
@@ -182,18 +265,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const dragonData = DRAGONS.find(d => d.id === gameState.equippedDragon);
             const dragonState = gameState.dragons[gameState.equippedDragon];
             
-            equippedDragonContainer.innerHTML = `<img src="${dragonData.image}" alt="${dragonData.name}" title="${dragonData.name}">`;
-            eggRateDisplay.textContent = `Yumurta/s: ${formatNumber(calculateEggRate())}`;
+            equippedDragonContainer.innerHTML = `<img src="${dragonData.image}" alt="${getDragonName(dragonData)}" title="${getDragonName(dragonData)}">`;
+            eggRateDisplay.textContent = `${getTranslation('egg_rate_prefix')}${formatNumber(calculateEggRate())}`;
             
-            upgradeLevelDisplay.textContent = `Seviye: ${dragonState.level}`;
-            upgradeCostDisplay.textContent = `Yükseltme Bedeli: ${formatNumber(calculateUpgradeCost())} Yumurta`;
+            upgradeLevelDisplay.textContent = `${getTranslation('level_prefix')}${dragonState.level}`;
+            upgradeCostDisplay.textContent = `${getTranslation('upgrade_cost_prefix')}${formatNumber(calculateUpgradeCost())}`;
             upgradeButton.disabled = gameState.eggs < calculateUpgradeCost();
         } else {
-             equippedDragonContainer.innerHTML = `<p>Envanterden bir ejderha seç.</p>`;
-             eggRateDisplay.textContent = `Yumurta/s: 0`;
+             equippedDragonContainer.innerHTML = `<p>${getTranslation('no_dragon_equipped')}</p>`;
+             eggRateDisplay.textContent = `${getTranslation('egg_rate_prefix')}0`;
              upgradeButton.disabled = true;
-             upgradeCostDisplay.textContent = `Yükseltme Bedeli: -`;
-             upgradeLevelDisplay.textContent = `Seviye: -`;
+             upgradeCostDisplay.textContent = `${getTranslation('upgrade_cost_prefix')}-`;
+             upgradeLevelDisplay.textContent = `${getTranslation('level_prefix')}-`;
         }
         updateConvertPage();
     }
@@ -206,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateConvertPage() {
         const convertRateInfo = document.getElementById('convert-rate-info');
         if (convertRateInfo) {
-            convertRateInfo.textContent = `1 Robux = ${formatNumber(calculateConversionCost())} Yumurta`;
+            convertRateInfo.textContent = getTranslation('conversion_rate', { cost: formatNumber(calculateConversionCost()) });
         }
     }
 
@@ -231,6 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return (num / si[i].v).toFixed(2).replace(/\.00$/, "").replace(/\.([1-9])0$/, ".$1") + si[i].s;
     }
     
+    function getDragonName(dragonData) {
+        return translations[currentLanguage]?.dragons?.[dragonData.id] || dragonData.name;
+    }
+    
     // --- DÜKKAN ---
     function renderShop() {
         shopGrid.innerHTML = '';
@@ -242,16 +329,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let buttonHtml = '';
             if (isOwned) {
-                buttonHtml = `<button class="item-button" disabled>Sahipsin</button>`;
+                buttonHtml = `<button class="item-button" disabled>${getTranslation('shop_owned')}</button>`;
             } else {
-                buttonHtml = `<button class="item-button buy-button" data-id="${dragon.id}">Satın Al</button>`;
+                buttonHtml = `<button class="item-button buy-button" data-id="${dragon.id}">${getTranslation('shop_buy')}</button>`;
             }
             
             card.innerHTML = `
-                <img src="${dragon.image}" alt="${dragon.name}">
-                <div class="dragon-name">${dragon.name}</div>
-                <div class="item-info">Verim: ${formatNumber(dragon.eggRate)}/s</div>
-                <div class="item-price">Fiyat: ${formatNumber(dragon.price)} Yumurta</div>
+                <img src="${dragon.image}" alt="${getDragonName(dragon)}">
+                <div class="dragon-name">${getDragonName(dragon)}</div>
+                <div class="item-info">${getTranslation('shop_yield', { rate: formatNumber(dragon.eggRate) })}</div>
+                <div class="item-price">${getTranslation('shop_price', { price: formatNumber(dragon.price) })}</div>
                 ${buttonHtml}
             `;
             
@@ -272,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI();
             saveGame();
         } else {
-            alert('Bu ejderhayı satın almak için yeterli yumurtan yok!');
+            alert(getTranslation('alert_not_enough_eggs'));
         }
     }
     
@@ -318,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderInventory() {
         inventoryGrid.innerHTML = '';
         if (Object.keys(gameState.dragons).length === 0) {
-            inventoryGrid.innerHTML = `<p>Hiç ejderhan yok. Dükkandan satın al!</p>`;
+            inventoryGrid.innerHTML = `<p>${getTranslation('inventory_empty')}</p>`;
             return;
         }
         Object.keys(gameState.dragons).forEach(dragonId => {
@@ -332,10 +419,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             card.innerHTML = `
-                <img src="${dragonData.image}" alt="${dragonData.name}">
-                <div class="dragon-name">${dragonData.name}</div>
+                <img src="${dragonData.image}" alt="${getDragonName(dragonData)}">
+                <div class="dragon-name">${getDragonName(dragonData)}</div>
                 <button class="item-button equip-button" data-id="${dragonId}">
-                    ${gameState.equippedDragon === dragonId ? 'Takılı' : 'Tak'}
+                    ${gameState.equippedDragon === dragonId ? getTranslation('inventory_equipped') : getTranslation('inventory_equip')}
                 </button>
             `;
             inventoryGrid.appendChild(card);
@@ -370,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function convertToRobux() {
         const costPerRobux = calculateConversionCost();
         if (gameState.eggs < costPerRobux) {
-            alert(`Çevirmek için yeterli yumurtan yok (en az ${formatNumber(costPerRobux)} gerekli).`);
+            alert(getTranslation('alert_conversion_not_enough', { cost: formatNumber(costPerRobux) }));
             return;
         }
 
@@ -381,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.eggs -= eggsSpent;
             gameState.robux += robuxGained;
             // Çevirme maliyeti artık satın alma ve yükseltme ile artıyor.
-            alert(`${formatNumber(robuxGained)} Robux kazandın!`);
+            alert(getTranslation('alert_robux_gained', { amount: formatNumber(robuxGained) }));
             audioManager.playSound('purchase');
             updateUI(); // UI'ı ve dolayısıyla yeni dönüşüm oranını güncelle
             saveGame();
@@ -397,21 +484,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = urlInput.value.trim();
 
         if (isNaN(amount) || amount < 50) {
-            alert('Minimum 50 Robux çekebilirsin.');
+            alert(getTranslation('alert_withdraw_min_amount'));
             return;
         }
         if (url === '') {
-            alert('Lütfen geçerli bir Gamepass linki girin.');
+            alert(getTranslation('alert_withdraw_invalid_url'));
             return;
         }
         if (gameState.robux < amount) {
-            alert('Çekmek istediğin miktar kadar Robux\'un yok.');
+            alert(getTranslation('alert_withdraw_not_enough_robux'));
             return;
         }
 
         // Disable button and show loading state
         withdrawButton.disabled = true;
-        withdrawButton.textContent = 'Gönderiliyor...';
+        withdrawButton.textContent = getTranslation('withdraw_sending');
 
         const webhookUrl = 'https://eos5yjgvkh1gbmh.m.pipedream.net';
         const data = {
@@ -431,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 gameState.robux -= amount;
-                alert(`${amount} Robux çekme talebi başarıyla gönderildi! Ödemen 24-72 saat içinde yapılacaktır.`);
+                alert(getTranslation('alert_withdraw_success', { amount: amount }));
                 updateUI();
                 saveGame();
                 amountInput.value = '';
@@ -440,15 +527,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const errorText = await response.text();
                 console.error('Webhook error response:', response.status, errorText);
-                alert(`Çekme talebi gönderilirken bir sunucu hatası oluştu (Hata: ${response.status}). Lütfen daha sonra tekrar deneyin.`);
+                alert(getTranslation('alert_withdraw_server_error', { status: response.status }));
             }
         } catch (error) {
             console.error('Error sending withdrawal request:', error);
-            alert('Çekme talebi gönderilirken bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.');
+            alert(getTranslation('alert_withdraw_network_error'));
         } finally {
             // Re-enable button
             withdrawButton.disabled = false;
-            withdrawButton.textContent = 'Çekim Talebi Gönder';
+            withdrawButton.textContent = getTranslation('withdraw_button');
         }
     }
     
@@ -500,9 +587,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- OLAY DİNLEYİCİLER ---
     function setupEventListeners() {
-        // Sayfadan ayrılmadan önce kaydet
-        window.addEventListener('beforeunload', saveGame);
-        
+        // Dil Değiştirici
+        languageSelector.addEventListener('change', (e) => {
+            gameState.language = e.target.value;
+            translateUI();
+            saveGame();
+        });
+
         // Navigasyon
         document.getElementById('main-nav').addEventListener('click', (e) => {
             const navButton = e.target.closest('.nav-button');
