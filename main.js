@@ -205,25 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ÇEVRİMDIŞI KAZANÇ ---
     function checkOfflineEarnings() {
-        const timeOfflineInSeconds = (Date.now() - gameState.lastSaveTimestamp) / 1000;
-        
-        // En az 1 dakika çevrimdışı kalmışsa kazanç ver
-        if (timeOfflineInSeconds > 60) {
-            const eggRate = calculateEggRate();
-            let offlineEggs = timeOfflineInSeconds * eggRate;
-            
-            // Kazancı 5 Milyon ile sınırla
-            const earningsCap = 5000000;
-            offlineEggs = Math.min(offlineEggs, earningsCap);
-
-            if (offlineEggs > 1) {
-                offlineEggs = Math.floor(offlineEggs);
-                gameState.eggs += offlineEggs; // Directly add earnings
-                alert(getTranslation('offline_earnings_alert', { amount: formatNumber(offlineEggs) }));
-                updateUI(); // Alert sonrası UI'ı güncelle
-            }
-        } 
-        // Always start the game now
+        // Offline earnings removed as per user request.
+        // This function now just ensures the game container is visible and music starts.
         gameContainer.classList.remove('hidden');
         document.dispatchEvent(new Event('play-music-event'));
     }
