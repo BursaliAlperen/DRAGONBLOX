@@ -79,8 +79,7 @@ body {
 #game-container {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Fallback for older browsers */
-    height: 100dvh; /* Dynamic viewport height for mobile */
+    height: 100vh;
     /* SafeArea için dolgu */
     padding: 1rem;
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
@@ -152,15 +151,17 @@ main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* İçeriği yukarıdan başlat */
+    justify-content: flex-start; /* was center */
     align-items: center;
     position: relative;
     padding: 0; /* Adjusted padding */
-    overflow: hidden; /* Prevent main from scrolling */
 }
 
 .page {
     width: 100%;
+    height: 100%; /* Allow pages to fill the main area */
+    display: flex; /* Use flex to center content */
+    flex-direction: column;
 }
 
 .page.scrollable-page {
@@ -169,6 +170,12 @@ main {
     padding-left: 1rem;
     padding-right: 1rem;
     padding-bottom: 1rem;
+    display: block; /* Override flex for grid layout */
+}
+
+#main-page {
+    justify-content: center; /* Center dragon vertically */
+    align-items: center; /* Center dragon horizontally */
 }
 
 #convert-page {
@@ -181,24 +188,15 @@ main {
 
 #dragon-area {
     text-align: center;
-    margin-top: 1rem; /* Add some margin to push it down a bit */
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Dikeyde ortala */
-    align-items: center;
-    height: 100%; /* Take full available space in main */
-    gap: 1rem;
 }
 
 #equipped-dragon-container {
-    width: clamp(180px, 60vw, 300px); /* Responsive size */
-    height: auto; /* Maintain aspect ratio */
-    aspect-ratio: 1 / 1;
+    width: 250px;
+    height: 250px;
     display: flex;
     justify-content: center;
     align-items: center;
     transition: transform 0.2s;
-    order: 2; /* Move dragon below the egg rate */
 }
 #equipped-dragon-container:active {
     transform: none;
@@ -212,13 +210,12 @@ main {
 }
 
 #egg-rate {
-    margin-top: 0;
+    margin-top: 1rem;
     font-size: 1.2rem;
     font-weight: 700;
     background: rgba(0,0,0,0.5);
     padding: 0.5rem 1rem;
     border-radius: 10px;
-    order: 1; /* Move egg rate above the dragon */
 }
 
 #upgrade-section, #ad-rewards-section {
@@ -657,7 +654,6 @@ nav {
     }
     .item-card .dragon-name {
         font-size: 0.8rem;
-        min-height: auto; /* Remove min-height */
     }
     .item-card .item-info, .item-card .item-price {
          font-size: 0.65rem;

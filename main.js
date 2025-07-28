@@ -75,11 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 delete parsedGame.adProgress;
             }
             gameState = parsedGame;
-
-            // Geriye dönük uyumluluk için adProgress'i doldur
-            if (!gameState.adProgress) {
-                gameState.adProgress = {};
-            }
             
             // Geriye dönük uyumluluk için eski save dosyalarını düzelt
             if (gameState.dragons) {
@@ -99,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.equippedDragon = 'red_dragon';
             gameState.conversionCost = 50000;
             gameState.lastSaveTimestamp = Date.now();
-            gameState.adProgress = {}; // adProgress'i yeni oyuncu için başlat
         }
         updateUI();
         updateAllGrids();
@@ -123,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.eggs += eggRate;
             updateUI();
         }
+        // Oyunu her saniye kaydet
+        saveGame();
     }
 
     // --- ÇEVRİMDIŞI KAZANÇ ---
@@ -494,9 +490,19 @@ document.addEventListener('DOMContentLoaded', () => {
             audioManager.playMusic('background_music');
         }
     });
+
+    // Sayfa gizlendiğinde oyunu kaydet
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            saveGame();
+        }
+    });
     
     // --- OLAY DİNLEYİCİLER ---
     function setupEventListeners() {
+        // Sayfadan ayrılmadan önce kaydet
+        window.addEventListener('beforeunload', saveGame);
+        
         // Navigasyon
         document.getElementById('main-nav').addEventListener('click', (e) => {
             const navButton = e.target.closest('.nav-button');
