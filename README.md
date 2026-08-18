@@ -1,13 +1,13 @@
 # RbxDraco — Premium Roblox Dragon Companion
 
-RbxDraco opens both through the Node backend and as a local/static simulation when Firebase or any backend is unavailable. It is a compact full-stack foundation for a premium Roblox companion site: a separated Node backend plus a standalone frontend SPA. The game economy uses **Draco Ember** as its scarce progression currency; dragons and eggs are independent persisted inventories, and dragons are unlocked only through the backend forge/progression system.
+RbxDraco opens both through the Node backend and as a local/static simulation when Firebase or any backend is unavailable. It is a compact full-stack foundation for a premium Roblox companion site: a separated Node backend plus a standalone frontend SPA. The game economy uses **Draco Ember** as its scarce progression currency with quest contracts, mastery upgrades, leaderboard prestige, anti-inflation sinks and transparent non-gambling loot-style presentation; dragons and eggs are independent persisted inventories, and dragons are unlocked only through the backend forge/progression system.
 
 ## File layout
 
 - `server.js` — backend API, auth, persistence, secure economy validation, Robux withdrawal workflow, admin APIs, static hosting.
 - `index.html` — root shell so the site opens on simple static hosts/file preview.
 - `frontend/index.html` — frontend HTML shell used by the separated frontend app.
-- `frontend/main.js` — frontend dashboard, Google continue simulation, collections, withdrawal GUI, transaction ledger, admin panel, local fallback simulation.
+- `frontend/main.js` — frontend dashboard, Google continue simulation, collections, withdrawal GUI, quest hub, leaderboard, transaction ledger, admin panel, local fallback simulation.
 - `frontend/style.css` — AAA dark-fantasy/glass UI, responsive layout, glow/particle polish.
 - `README.md` — Render deployment notes and Firestore rules reference.
 
@@ -34,7 +34,7 @@ Create a Render Web Service from this repository:
 
 ## Security model
 
-- Server-authoritative balances, dragon unlocks, egg purchases, withdrawal state and admin actions.
+- Server-authoritative balances, dragon unlocks/upgrades, quest rewards, egg purchases, withdrawal state and admin actions.
 - PBKDF2 password hashing, HttpOnly SameSite session cookies, Origin checks, input limits, IP/user rate limits and timing-safe admin token checks.
 - Robux withdrawal minimum is 20 Robux and requires backend balance checks, duplicate/cooldown protection, pending/approved/rejected states and Game Pass validation.
 - The frontend never receives secrets and cannot approve withdrawals or mutate balances directly in backend mode.

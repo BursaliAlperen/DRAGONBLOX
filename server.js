@@ -37,6 +37,12 @@ const catalog = Object.freeze({
     { id: 'ward', name: 'Vault Ward', cost: 900, desc: 'Adds an account ward flag and audit note for payout reviews.' },
     { id: 'sigil', name: 'Celestial Sigil', cost: 2200, desc: 'Prestige burn that removes Draco Ember from circulation.' }
   ],
+  quests: [
+    { id: 'daily-flame', name: 'Daily Flame Contract', reward: 75, cooldownMs: 86_400_000, minTier: 1 },
+    { id: 'vault-audit', name: 'Vault Audit Run', reward: 140, cooldownMs: 43_200_000, minTier: 3 },
+    { id: 'mythic-hunt', name: 'Mythic Hunt Board', reward: 420, cooldownMs: 86_400_000, minTier: 8 }
+  ],
+  season: { name: 'Obsidian Season', passFree: true, milestones: [500, 1500, 4000, 9000, 18000] },
   goals: { dailyBase: 180, dailyPerTier: 45, weekly: 1500 },
   withdraw: { minimum: 20, cooldownMs: 86_400_000, states: ['pending', 'approved', 'rejected'] }
 });
@@ -62,10 +68,10 @@ function makeUser(uid, email) {
     profile: { name: email.split('@')[0].slice(0, 18), tier: 1, xp: 0, daily: { day: '', earned: 0 }, weekly: { week: '', earned: 0 } },
     balances: { draco: 80, robux: 0 },
     dragons: { ember: { id: 'ember', level: 1, unlockedAt: now() } },
-    eggs: { cinder: 1 }, withdrawals: [], tx: [], limits: {}, flags: {}, security: { failedLogins: 0 }
+    eggs: { cinder: 1 }, quests: {}, withdrawals: [], tx: [], limits: {}, flags: {}, security: { failedLogins: 0 }
   };
 }
-function publicUser(u) { return { id: u.id, email: u.email, role: u.role, profile: u.profile, balances: u.balances, dragons: u.dragons, eggs: u.eggs, withdrawals: u.withdrawals.map(id => db.withdrawals[id]).filter(Boolean), tx: u.tx.slice(0, 80), flags: u.flags }; }
+function publicUser(u) { return { id: u.id, email: u.email, role: u.role, profile: u.profile, balances: u.balances, dragons: u.dragons, eggs: u.eggs, quests: u.quests || {}, withdrawals: u.withdrawals.map(id => db.withdrawals[id]).filter(Boolean), tx: u.tx.slice(0, 80), flags: u.flags }; }
 function addTx(u, type, delta, meta = {}) { u.tx.unshift({ id: rid(), at: now(), type, delta, meta }); u.tx = u.tx.slice(0, 100); }
 function userLimit(u, key, ms) { const last = u.limits[key] || 0; if (now() - last < ms) throw httpError(429, 'rate_limited'); u.limits[key] = now(); }
 function ipLimit(req, key, max, ms) { const ip = req.socket.remoteAddress || 'local'; const id = `${ip}:${key}`; const hit = db.ipHits[id] || { at: now(), count: 0 }; if (now() - hit.at > ms) { hit.at = now(); hit.count = 0; } if (++hit.count > max) throw httpError(429, 'too_many_requests'); db.ipHits[id] = hit; }
@@ -129,6 +135,9 @@ async function api(req, res) {
     if (req.url === '/api/me') return send(res, 200, { user: publicUser(user), catalog, brand: 'RbxDraco' });
     if (req.url === '/api/claim') return claim(res, user);
     if (req.url === '/api/unlock-dragon') return unlockDragon(res, user, body.id);
+    if (req.url === '/api/upgrade-dragon') return upgradeDragon(res, user, body.id);
+    if (req.url === '/api/complete-quest') return completeQuest(res, user, body.id);
+    if (req.url === '/api/leaderboard') return leaderboard(res);
     if (req.url === '/api/buy-egg') return buyEgg(res, user, body.id);
     if (req.url === '/api/sink') return buySink(res, user, body.id);
     if (req.url === '/api/withdraw') return withdraw(res, user, body);
@@ -214,6 +223,44 @@ function unlockDragon(res, user, dragonId) {
   saveDb();
   send(res, 200, { user: publicUser(user) });
 }
+
+function upgradeDragon(res, user, dragonId) {
+  userLimit(user, 'upgrade', 2_000);
+  const owned = user.dragons[String(dragonId)];
+  const dragon = owned && catalog.dragons.find(d => d.id === owned.id);
+  if (!owned || !dragon) throw httpError(400, 'dragon_not_owned');
+  if (owned.level >= 25) throw httpError(400, 'max_level');
+  const cost = Math.ceil((dragon.cost || 120) * 0.24 + Math.pow(owned.level + 1, 2.15) * 34);
+  if (user.balances.draco < cost) throw httpError(400, 'insufficient_draco');
+  user.balances.draco -= cost;
+  owned.level += 1;
+  addTx(user, 'Dragon mastery upgrade', -cost, { dragon: dragon.id, level: owned.level });
+  saveDb();
+  send(res, 200, { user: publicUser(user), cost });
+}
+function completeQuest(res, user, questId) {
+  userLimit(user, 'quest', 2_000);
+  user.quests ||= {};
+  const quest = catalog.quests.find(q => q.id === String(questId));
+  if (!quest) throw httpError(400, 'unknown_quest');
+  if (user.profile.tier < quest.minTier) throw httpError(403, 'quest_tier_locked');
+  const last = user.quests[quest.id]?.at || 0;
+  if (now() - last < quest.cooldownMs) throw httpError(429, 'quest_cooldown');
+  const reward = quest.reward + Math.floor(user.profile.tier * 3);
+  user.quests[quest.id] = { at: now(), reward };
+  user.balances.draco += reward;
+  user.profile.xp += reward;
+  user.profile.weekly.earned += reward;
+  user.profile.tier = Math.max(user.profile.tier, Math.floor(user.profile.xp / 550) + 1);
+  addTx(user, 'Quest contract completed', reward, { quest: quest.id });
+  saveDb();
+  send(res, 200, { user: publicUser(user), reward });
+}
+function leaderboard(res) {
+  const rows = Object.values(db.users).map(u => ({ name: u.profile.name, tier: u.profile.tier, draco: u.balances.draco, dragons: Object.keys(u.dragons).length, eggs: Object.values(u.eggs).reduce((a, b) => a + b, 0) })).sort((a, b) => (b.tier - a.tier) || (b.draco - a.draco)).slice(0, 20);
+  send(res, 200, { rows });
+}
+
 function buyEgg(res, user, eggId) {
   userLimit(user, 'egg', 2_000);
   const egg = catalog.eggs.find(e => e.id === String(eggId));
